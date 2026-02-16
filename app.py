@@ -22,12 +22,13 @@ if "deid_method" not in st.session_state:
 # Inspektr settings
 with st.sidebar:
     st.title("🔍 Inspektr")
-    with st.expander("Google Cloud Settings", expanded=False):
-        project = st.text_input("Project ID", value=PROJECT_ID, disabled=True)
-        location = st.text_input("Location", value=LOCATION, disabled=True)
+    # Uncomment when making these settings configurable
+    # with st.expander("Google Cloud Settings", expanded=False):
+    #     project = st.text_input("Project ID", value=PROJECT_ID, disabled=True)
+    #     location = st.text_input("Location", value=LOCATION, disabled=True)
     
     with st.expander("Inspection Settings", expanded=True):
-        enable_inspection = st.checkbox("Enable Inspection", value=True, disabled=True)
+        enable_inspection = st.checkbox("Inspect only", value=True, disabled=True)
         enabled_infotypes = [ 
             "PASSPORT",
             "GOVERNMENT_ID",
@@ -43,7 +44,7 @@ with st.sidebar:
             st.caption(items_text)
     
     with st.expander("De-Identification Settings", expanded=True):
-        enable_deid = st.checkbox("Enable De-Identification", value=False)
+        enable_deid = st.checkbox("Inspect and de-identify", value=False)
 
         if enable_deid:
             col1, col2 = st.columns([0.05, 0.95])
@@ -155,15 +156,17 @@ if input := st.chat_input("Ask anything"):
                         }
                     )
                     output = deid_response.item.value
+                    st.info(output)
 
                 else:
                     if findings:
-                        lines = [f"{f.info_type.name}: {f.quote}" for f in findings]
-                        output = "🚨 Sensitive data found:\n\n" + "\n\n".join(lines)
+                        items = [f"* {f.info_type.name}: {f.quote}" for f in findings]
+                        output = "🚨 Sensitive data found!\n\n" + "\n".join(items)
+                        st.warning(output)
                     else:
                         output = "✅ No sensitive data found."
+                        st.success(output)
 
-                st.write(output)
                 st.session_state.messages.append({"role": "assistant", "content": output})
 
         except Exception as e:
